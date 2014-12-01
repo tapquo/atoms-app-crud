@@ -60,7 +60,6 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
         @columns = @_parseArrayToColumnsObj data.entity.attributes
       @required = data.required if data.required?
 
-      console.log "@columns:", @columns
       @_createFields @columns, @required? if @columns?
 
   _parseArrayToColumnsObj: (array) ->
