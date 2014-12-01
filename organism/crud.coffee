@@ -56,11 +56,12 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
       if data.columns?
         @columns = data.columns
       else if data.entity?
-        @columns = @_parseArrayToColumnsObj Atoms.Entity[data.entity.split(".").pop()].attributes
+        @entityType = data.entity
+        @columns = @_parseArrayToColumnsObj data.entity.attributes
       @required = data.required if data.required?
 
+      console.log "@columns:", @columns
       @_createFields @columns, @required? if @columns?
-      @entityType = data.entity if data.entity?
 
   _parseArrayToColumnsObj: (array) ->
     columns = {}
@@ -70,13 +71,14 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
   _createFields:(columns, required)->
     @section.form.destroyChildren()
 
+
     for field of columns
       properties =
         id         : field
         name       : field
         type       : "text"
         placeholder: field
-        required   : true if field in required
+        required   : true if field in required?
       @section.form.appendChild "Atom.Input", properties
 
   onClose: ->
@@ -106,28 +108,29 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
   show: (info) ->
     super
     @section.form.clean()
+    @footer.nav.delete.el.hide()
+
     if info?
       @header.title.refresh value: info.title if info.title?
+      
+      if info.entity?
+        @entitySelected = info.entity
+        @footer.nav.delete.el.show()
       if info.columns?
         columns = info.columns
       else if info.entity?
-        columns = @_parseArrayToColumnsObj Atoms.Entity[info.entity.className].attributes
+        columns = @_parseArrayToColumnsObj __.Entity[info.entity.className].attributes
       else
         columns = @columns
+
       @_createFields columns, if info.required? then info.required else @required
       @section.form["#{field}"].value info.entity["#{field}"] for field of columns if columns?
-
-      if info.entity?
-        @entityType = "Atoms.Entity.#{info.entity.className}"
-        @entitySelected = info.entity
-        @footer.nav.delete.el.show()
-      else
-        @footer.nav.delete.el.hide()
     else
       @entitySelected = null
 
+
   create: (values) ->
-    entity = Atoms.Entity[@entityType.split(".").pop()].create values
+    entity = @entityType.create values
     @trigger "create", entity
 
   update: (entity) ->
