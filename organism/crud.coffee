@@ -53,11 +53,12 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
     super
     if data?
       @header.title.refresh value: data.title if data.title?
-      if data.columns?
-        @columns = data.columns
-      else if data.entity?
+      
+      if data.entity?
         @entityType = data.entity
         @columns = @_parseArrayToColumnsObj data.entity.attributes
+
+      @columns = data.columns if data.columns?
       @required = data.required if data.required?
 
       @_createFields @columns, @required? if @columns?
@@ -69,7 +70,6 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
 
   _createFields:(columns, required)->
     @section.form.destroyChildren()
-
 
     for field of columns
       properties =
