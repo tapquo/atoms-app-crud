@@ -61,7 +61,7 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
       @columns = data.columns if data.columns?
       @required = data.required if data.required?
 
-      @_createFields @columns, @required? if @columns?
+      @_createFields @columns, @required
 
   _parseArrayToColumnsObj: (array) ->
     columns = {}
@@ -70,14 +70,14 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
 
   _createFields:(columns, required)->
     @section.form.destroyChildren()
-
+    if not required? then required=[]
     for field of columns
       properties =
         id         : field
         name       : field
         type       : "text"
         placeholder: field
-        required   : true if field in required?
+        required   : true if field in required
       @section.form.appendChild "Atom.Input", properties
 
   onClose: ->
