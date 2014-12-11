@@ -4,12 +4,13 @@ Este elemento sirve para crear un CRUD (create, read, update and delete) de una 
 ### Attributes
 
 ```
-id       : String [OPTIONAL]
-style    : String [OPTIONAL]
-entity   : String [OPTIONAL]
-columns  : String [OPTIONAL]
-title    : String [OPTIONAL]
-requiered: String [OPTIONAL]
+id        : String [OPTIONAL]
+style     : String [OPTIONAL]
+title     : String [OPTIONAL]
+entity    : String|EntityObject [REQUIRED]
+fields    : [String] [OPTIONAL]
+required  : [String] [OPTIONAL]
+destroy   : Boolean [OPTIONAL]
 ```
 
 
@@ -17,31 +18,31 @@ requiered: String [OPTIONAL]
 
 #### new Atoms.Organism.Crud()
 
-El constructor puede ser llamado sin parametros o con una estructura (entity,columns,title,required) en donde todos los parametros son opcionales. Unicamente sera obligatorio pasar una *entidad* en el *constructor* o en el metodo *show* para poder mostrar el formulario dinamicamente.
+El constructor debe ser inicializado al menos con el atributo `entity`, en este atributo estableceremos el namespace de la *entity* que queremos gestionar. De esta manera este organismo será capaz de establecer la estructura base del formulario:
 
 **Examples**
 
 ```
-crud_instance = new Atoms.Organism.Crud()
+crud_instance = new Atoms.Organism.Crud({entity: "Atoms.Entity.Contact"})
 ```
+
+En el caso de que queramos establecer más atributos como:
+  - Título del *dialog*
+  - Campos de la entidad a gestionar
+  - Campos obligatorios
 
 ```
 crud_instance = new Atoms.Organism.Crud 
-  entity: "Atoms.Entity.Contact"
-  columns:
-    id          : "string"
-    name        : "string"
-    description : "string"
-  title: "CRUD Usuarios"
-  required: ["name", "description"]
-  
+  entity : "Atoms.Entity.Contact"
+  fields : ["name", "bio", "twitter"]
+  title  : "CRUD Usuarios"
+  required: ["name"]
 ```
 
 ### Methods
 
 #### .show()
-Este método muestra un *Dialog* con los campos de la entidad.
-Si no se pasa una *entity* al metodo show(), mostrara un Dialog con los campos de la entidad definida en el constructor permitiendonos crear nuevas entidades de ese tipo. 
+Este método muestra un *Dialog* con los campos de la entidad. Si no se pasa una *entity* al metodo show(), mostrara un Dialog con los campos de la entidad definida en el constructor permitiendonos crear nuevas entidades de ese tipo. 
 
 En caso contrario mostrara los campos y datos de la entidad pasada por parametro y nos permitira modificarla o borrarla.
 

@@ -2,140 +2,102 @@
 
 class Atoms.Organism.Crud extends Atoms.Organism.Dialog
 
-  @events: ["create", "update", "delete"]
+  @extends: true
+
+  @events : ["create", "update", "delete"]
 
   @default:
     id: "crud"
     children: [
       "Organism.Header":
-        id: "header"
+        id      : "header"
         children: [
-          "Atom.Heading": 
-            id: "title"
-            value: "CRUD"
+          "Atom.Heading": id: "title"
         ,
           "Molecule.Navigation":
-            style: "right"
+            style   : "right"
             children: [ "Atom.Button": icon: "close", callbacks: ["onClose"] ]
         ],
       "Organism.Section":
-        id: "section"
-        children: [
-          "Molecule.Form":
-            id: "form"
-        ],
+        id      : "section"
+        children: [ "Molecule.Form": id: "form" ],
       "Organism.Footer":
-        id: "footer"
+        id      : "footer"
         children: [
           "Molecule.Navigation":
             id: "nav"
             children: [
-              "Atom.Button": 
-                id: "delete"
-                text: "Delete"
-                callbacks: ["onDestroy"]
-                style: "left"
+              "Atom.Button":
+                id        : "delete"
+                style     : "left"
+                text      : "Delete"
+                callbacks : ["onDestroy"]
             ,
-              "Atom.Button": 
-                id: "save"
-                text: "Save"
-                callbacks: ["onSave"]
-                style: "right"
+              "Atom.Button":
+                id        : "save"
+                style     : "right default"
+                text      : "Save"
+                callbacks : ["onSave"]
             ]
-
         ]
     ]
 
-  @extends: true
-
-
-  constructor: (data) ->
+  constructor: ->
     super
-    if data?
-      @header.title.refresh value: data.title if data.title?
-      
-      if data.entity?
-        @entityType = data.entity
-        @columns = @_parseArrayToColumnsObj data.entity.attributes
+    @attributes.fields = @attributes.fields or @entity.toClassObject()?.attributes
+    @entityConstructor = @entity.toClassObject()
+    delete @entity
+    @__createFields @attributes.fields
 
-      @columns = data.columns if data.columns?
-      @required = data.required if data.required?
+  # -- Public Events -----------------------------------------------------------
+  create: (attributes = {}) ->
+    attributes.destroy = false
+    delete attributes.entity
+    @show attributes
 
-      @_createFields @columns, @required
+  show: (attributes = {}) ->
+    super
+    @header.title.el.html attributes.title or @attributes.title
+    @entity = attributes.entity
+    fields = @attributes.fields
+    if attributes.fields
+      fields = attributes.fields or @attributes.fields or @entity?.constructor.attributes
+    @__createFields fields, attributes.required
+    @section.form.value @entity if @entity
+    @footer.nav.delete.el[if attributes.destroy then "show" else "hide"]()
 
-  _parseArrayToColumnsObj: (array) ->
-    columns = {}
-    columns[field] = "text" for field in array
-    columns
+  # -- Children Bubble Events --------------------------------------------------
+  onSave: (event, atom)->
+    valid = true
+    values = @section.form.value()
+    for key, value of values when key in @attributes.required and not value
+      valid = false
+      break
+    if valid
+      if @entity
+        method = "update"
+        @entity.updateAttributes values
+      else
+        method = "create"
+        @entity = @entityConstructor.create values
+      @trigger method, @entity
+      do @hide
 
-  _createFields:(columns, required)->
+  onDestroy: ->
+    @entity.destroy()
+    @trigger "destroy", @entity
+    do @hide
+
+  onClose: ->
+    do @hide
+
+  # -- Private methods ---------------------------------------------------------
+  __createFields:(fields, required = @attributes.required or [])->
     @section.form.destroyChildren()
-    if not required? then required=[]
-    for field of columns
-      properties =
+    for field in fields
+      @section.form.appendChild "Atom.Input",
         id         : field
         name       : field
         type       : "text"
         placeholder: field
         required   : true if field in required
-      @section.form.appendChild "Atom.Input", properties
-
-  onClose: ->
-    do @hide
-
-  onSave: (event, atom)->
-
-    requiredPass = true
-    for child in @section.form.children
-      if child.attributes.required and not child.value()
-        child.el.addClass "error"
-        requiredPass = false
-      else
-        child.el.removeClass "error"
-
-    if requiredPass
-      if @entitySelected?
-        @update @entitySelected
-      else
-        @create @section.form.value()
-      @hide()
-
-  onDestroy: ->
-    @destroy @entitySelected
-    do @hide
-
-  show: (info) ->
-    super
-    @section.form.clean()
-    @footer.nav.delete.el.hide()
-
-    if info?
-      @header.title.refresh value: info.title if info.title?
-      
-      if info.entity?
-        @entitySelected = info.entity
-        @footer.nav.delete.el.show()
-      if info.columns?
-        columns = info.columns
-      else if info.entity?
-        columns = @_parseArrayToColumnsObj __.Entity[info.entity.className].attributes
-      else
-        columns = @columns
-
-      @_createFields columns, if info.required? then info.required else @required
-      @section.form["#{field}"].value info.entity["#{field}"] for field of columns if columns?
-    else
-      @entitySelected = null
-
-
-  create: (values) ->
-    entity = @entityType.create values
-    @trigger "create", entity
-
-  update: (entity) ->
-    entity.updateAttributes @section.form.value()
-    @trigger "update", entity
-
-  destroy: (entity) ->
-    entity.destroy()
-    @trigger "destroy", entity

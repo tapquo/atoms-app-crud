@@ -7,7 +7,6 @@ connect = require 'gulp-connect'
 header  = require 'gulp-header'
 uglify  = require 'gulp-uglify'
 gutil   = require 'gulp-util'
-stylus  = require 'gulp-stylus'
 pkg     = require './package.json'
 
 source =
@@ -33,25 +32,32 @@ banner = [
   ""
 ].join("\n")
 
+gulp.task "webserver", ->
+  connect.server
+    port      : 8080
+    livereload: true
+
 gulp.task "coffee", ->
   gulp.src source.coffee
     .pipe concat "#{pkg.name}.coffee"
-    .pipe(coffee().on('error', gutil.log))
+    .pipe coffee().on "error", gutil.log
     .pipe uglify mangle: false
     .pipe header banner, pkg: pkg
     .pipe gulp.dest "."
     .pipe connect.reload()
 
-gulp.task "stylus", ->
-  gulp.src source.stylus
-    .pipe concat "#{pkg.name}.styl"
-    .pipe(stylus(compress: true, errors: true))
+gulp.task "test", ->
+  gulp.src source.test
+    .pipe concat "#{pkg.name}.coffee"
+    .pipe coffee().on "error", gutil.log
+    .pipe uglify mangle: false
     .pipe header banner, pkg: pkg
-    .pipe gulp.dest "."
+    .pipe gulp.dest "test/"
     .pipe connect.reload()
 
-gulp.task "init", ["coffee", "stylus"]
+gulp.task "init", ["coffee", "test"]
 
 gulp.task "default", ->
+  gulp.run ["webserver"]
   gulp.watch source.coffee, ["coffee"]
-  gulp.watch source.stylus, ["stylus"]
+  gulp.watch source.test, ["test"]
