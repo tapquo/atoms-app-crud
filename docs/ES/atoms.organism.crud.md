@@ -1,5 +1,5 @@
 ## Organism.Crud
-Este elemento sirve para crear un CRUD (create, read, update and delete) de una entidad dinámicamente sobre ventanas flotantes o mensajes de dialogo con los campos que tiene la entidad. Es un elemento contenedor padre que contendra los campos de texto de la entidad.
+Este organismo extiende de *Dialog* y sirve para crear dinamicamente una ventana de diálogo que permite realizar acciones CRUD (create, read, update and delete) a una entidad. La ventana de diálogo se cargara automáticamente con los campos de la entidad dada.
 
 ### Attributes
 
@@ -23,13 +23,14 @@ El constructor debe ser inicializado al menos con el atributo `entity`, en este 
 **Examples**
 
 ```
-crud_instance = new Atoms.Organism.Crud({entity: "Atoms.Entity.Contact"})
+crud_instance = new Atoms.Organism.Crud 
+  entity: "Atoms.Entity.Contact"
 ```
 
 En el caso de que queramos establecer más atributos como:
+  - Campos de la entidad a gestionar [Array]
   - Título del *dialog*
-  - Campos de la entidad a gestionar
-  - Campos obligatorios
+  - Campos obligatorios [Array]
 
 ```
 crud_instance = new Atoms.Organism.Crud 
@@ -41,44 +42,46 @@ crud_instance = new Atoms.Organism.Crud
 
 ### Methods
 
+#### .create()
+Este método muestra un *Dialog* con los campos de la entidad definida en el constructor. Los campos estaran vacios permitiendonos insertar nuevos datos y crear nuevas entidades. 
+
+**Examples**
+
+```
+crud_instance.create
+```
+
+Si no hemos definido el title de la ventana de diálogo en el constructor del crud podriamos establecer el título:
+
+```
+crud_instance.create 
+  title   : "New Contact"
+```
+
 #### .show()
-Este método muestra un *Dialog* con los campos de la entidad. Si no se pasa una *entity* al metodo show(), mostrara un Dialog con los campos de la entidad definida en el constructor permitiendonos crear nuevas entidades de ese tipo. 
+Este método muestra un *Dialog* con los campos y valores de la entidad dada, permitiendonos ver,modificar y borrar la entidad. El único parámetro obligatorio de show() es la entidad que deseamos ver, modificar o borrar.
+Si deseamos mostrar el boton que permita borrar la entidad debemos pasar el atributo destroy con valor true.
 
-En caso contrario mostrara los campos y datos de la entidad pasada por parametro y nos permitira modificarla o borrarla.
-
-**Example**
-
-```
-crud_instance.show();
-```
-
-#### .show(parameters)
-
-Es posible no mostrar todos los campos de la entidad indicando en el parámetro *columns* cuales se quieren mostrar, el cual recibe un objeto campo: tipo.
-
-Es posible definir campos como *required*(obligatorios) usando el parámetro *required* que recibe un array de los campos.
-
-Podemos establecer el titulo de la ventana del CRUD pasando por parametro *title*.
-
-**Example**
+**Examples**
 
 ```
-    crud_instance.show 
-      entity: atom.entity
-      title : "Edit contact"
-      required: ["name"]
-      columns:
-        name        : "string"
-        description : "string"
+crud_instance.show
+  title   : "Edit #{oihane.name}"
+  entity  : oihane
 ```
 
-#### .hide()
-Este método permite ocultar el CRUD.
-
-**Example**
+Al igual que en el constructor podemos establecer más atributos como:
+  - Campos de la entidad a gestionar [Array]
+  - Título del *dialog*
+  - Campos obligatorios [Array]
 
 ```
-crud_instance.hide();
+crud_instance.show
+  title   : "Edit #{oihane.name}"
+  entity  : oihane
+  fields  : ["name", "description", "url", "year"]
+  required: ["description"]
+  destroy : true
 ```
 
 
