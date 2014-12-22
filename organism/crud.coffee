@@ -47,7 +47,6 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
     @attributes.fields = @attributes.fields or @entity.toClassObject()?.attributes
     @entityConstructor = @entity.toClassObject()
     delete @entity
-    @__createFields @attributes.fields
 
   # -- Public Events -----------------------------------------------------------
   create: (attributes = {}) ->
@@ -98,6 +97,13 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
       @section.form.appendChild "Atom.Input",
         id         : field
         name       : field
-        type       : "text"
+        type       : @__type field
         placeholder: field
         required   : true if field in required
+
+  __type: (field) ->
+    type = "text"
+    value = typeof @entity?[field]
+    if value is "number" then type = "number"
+    if value is "boolean" then type = "checkbox"
+    type
