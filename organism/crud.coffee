@@ -7,7 +7,6 @@ class Atoms.Organism.Crud extends Atoms.Organism.Dialog
   @events : ["create", "update", "delete"]
 
   @default:
-    id: "crud"
     children: [
       "Organism.Header":
         id      : "header"
